@@ -1,8 +1,16 @@
 ---
-title: "Lab 4"
-subtitle: "Bayesian Rainfall Analysis"
+title: "Lab 4: Bayesian Rainfall Analysis"
+subtitle: "Bayesian GEV model setup, Prior specification strategies, Two-station comparison problem"
 author: CEVE 543 Fall 2025
 date: "2025-09-19"
+type: "lab"
+module: 1
+week: 4
+objectives:
+  - "Set up Bayesian GEV models with informative priors"
+  - "Develop strategies for prior specification in extreme value analysis"
+  - "Compare rainfall patterns between two stations using Bayesian inference"
+ps_connection: "Builds Bayesian GEV toolkit for PS1 Tasks 1-2"
 
 engine: julia
 
@@ -12,7 +20,7 @@ format:
     toc-depth: 2
     code-block-bg: "#f8f8f8"
     code-block-border-left: "#e1e4e5"
-    theme: default
+    theme: cosmo
     number-sections: true
     fig-format: svg
   typst:
