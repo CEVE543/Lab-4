@@ -33,3 +33,9 @@ code-line-numbers: false
 code-block-font-size: "0.85em"
 ---
 
+## Topics
+
+- Bayesian GEV model setup
+- Prior specification strategies
+- Two-station comparison problem
+
