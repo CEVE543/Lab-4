@@ -41,9 +41,32 @@ code-line-numbers: false
 code-block-font-size: "0.85em"
 ---
 
-## Topics
+## Objectives
 
-- Bayesian GEV model setup
-- Prior specification strategies
-- Two-station comparison problem
+1. Set up Bayesian GEV models with informative priors
+1. Develop strategies for prior specification in extreme value analysis
+1. Compare rainfall patterns between two stations using Bayesian inference
+
+## Before
+
+::: {.callout-important}
+## Instructions
+
+Do this before the lab date so that lab itself can go more smoothly.
+:::
+
+## Background and Reading
+
+<!-- Content will be added here -->
+
+## Tasks
+
+Modify the code section below to address the following tasks.
+
+1. Set up Bayesian GEV models with informative prior distributions
+1. Develop and justify prior specification strategies for extreme value parameters
+1. Compare rainfall patterns between two stations using Bayesian framework
+1. Analyze posterior distributions and assess model differences
+
+## Code
 
