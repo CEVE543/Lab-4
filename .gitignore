@@ -4,3 +4,5 @@
 .cache
 .jupyter_cache
 Manifest.toml
+*.nc
+*.txt

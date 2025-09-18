@@ -4,26 +4,26 @@
 
 ## Overview
 
-This lab builds on the previous GEV inference techniques by introducing Bayesian modeling approaches for extreme value analysis. Students will learn to set up Bayesian GEV models, develop strategies for prior specification, and use these tools to compare rainfall patterns between two stations.
+This lab introduces Bayesian modeling for extreme value analysis through an iterative workflow emphasizing thoughtful prior specification. Students will develop Bayesian GEV models using Turing.jl and ArviZ.jl, learning to think like Bayesian statisticians while building tools for Houston rainfall analysis.
 
 ## Topics Covered
 
-- Bayesian GEV model setup with Turing.jl
-- Prior specification strategies for extreme value parameters
-- Two-station comparison problem using Bayesian inference
-- Model comparison and selection techniques
-- Posterior predictive checking
+- Iterative prior specification and prior predictive checking
+- Bayesian GEV modeling with Turing.jl and MCMC sampling
+- ArviZ.jl for modern Bayesian diagnostics and visualization
+- Two-station comparative analysis with uncertainty quantification
+- Return level estimation with full Bayesian uncertainty propagation
+- Efficient caching strategies for computational workflows
 
 ## Objectives
 
 - Set up Bayesian GEV models with informative priors
 - Develop strategies for prior specification in extreme value analysis
 - Compare rainfall patterns between two stations using Bayesian inference
-- Understand the advantages of Bayesian approaches for uncertainty quantification
 
 ## Connection to Problem Sets
 
-This lab builds the Bayesian GEV toolkit that students will use for PS1 Tasks 1-2, providing the foundation for sophisticated statistical modeling of extreme rainfall events with proper uncertainty quantification.
+This lab builds the complete Bayesian GEV toolkit that students will use for PS1 Tasks 1 and 3, providing essential skills in prior specification, convergence diagnostics, and uncertainty quantification for extreme value analysis.
 
 ---
 
