@@ -1,5 +1,5 @@
 ---
-title: "Lab 4: Bayesian Rainfall Analysis"
+title: "CEVE 543 Fall 2025 Lab 4: Bayesian Rainfall Analysis"
 subtitle: "Iterative prior specification, Bayesian GEV workflow, Two-station comparison with ArviZ.jl"
 author: CEVE 543 Fall 2025
 date: "2025-09-19"
