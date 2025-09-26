@@ -440,15 +440,23 @@ Maximum a posteriori (MAP) estimation finds the parameter values that maximize t
 We can look at `optim_result` from the MLE optimization to see if it thinks it converged
 
 ```{julia}
-mle_estimate = maximum_likelihood(bayes_model, NelderMead(); maxiters=1_000)
+mle_estimate = maximum_likelihood(bayes_model, NelderMead(); initial_params=[0.0, log(1.0), 0.0], maxiters=1_000)
 mle_estimate.optim_result
 ```
 
 Similarly for MAP
 
 ```{julia}
-map_estimate = maximum_a_posteriori(bayes_model, NelderMead(); maxiters=1_000)
+map_estimate = maximum_a_posteriori(bayes_model, NelderMead(); initial_params=[0.0, log(1.0), 0.0], maxiters=1_000)
 map_estimate.optim_result
+```
+
+For comparison, let's also compute MAP estimates using the original model without return level priors:
+
+```{julia}
+original_model = gev_model(y_obs)
+map_estimate_original = maximum_a_posteriori(original_model, NelderMead(); initial_params=[0.0, log(1.0), 0.0], maxiters=1_000)
+map_estimate_original.optim_result
 ```
 
 We can save the resulting GEV distributions for later plotting
@@ -457,6 +465,7 @@ We can save the resulting GEV distributions for later plotting
 #| output: false
 mle_dist = GeneralizedExtremeValue(mle_estimate.values[1], exp(mle_estimate.values[2]), mle_estimate.values[3])
 map_dist = GeneralizedExtremeValue(map_estimate.values[1], exp(map_estimate.values[2]), map_estimate.values[3])
+map_dist_original = GeneralizedExtremeValue(map_estimate_original.values[1], exp(map_estimate_original.values[2]), map_estimate_original.values[3])
 ```
 
 ### Bayesian Posterior Sampling
