@@ -123,7 +123,7 @@ We use [Makie](https://docs.makie.org/) with the CairoMakie backend for high-qua
 ```{julia}
 #| output: false
 using CairoMakie
-CairoMakie.activate!(type="svg")
+CairoMakie.activate!(type = "svg")
 ```
 
 We load some utility packages for data manipulation and downloading files.
@@ -159,13 +159,13 @@ We'll use the same Texas precipitation dataset from Labs 2 and 3, using a [`let.
 ```{julia}
 #| output: false
 stations, rainfall_data = let  # <1>
-    precip_fname = joinpath(lab_dir, "dur01d_ams_na14v11.txt")
-    url = "https://hdsc.nws.noaa.gov/pub/hdsc/data/tx/dur01d_ams_na14v11.txt"
+	precip_fname = joinpath(lab_dir, "dur01d_ams_na14v11.txt")
+	url = "https://hdsc.nws.noaa.gov/pub/hdsc/data/tx/dur01d_ams_na14v11.txt"
 
-    if !isfile(precip_fname)
-        Downloads.download(url, precip_fname)
-    end
-    read_noaa_data(precip_fname)
+	if !isfile(precip_fname)
+		Downloads.download(url, precip_fname)
+	end
+	read_noaa_data(precip_fname)
 end
 ```
 
@@ -179,23 +179,23 @@ Next, choose the same station you used in Lab 3 for your analysis.
 ```{julia}
 my_stnid = 111  # REQUIRED: replace with your chosen station ID
 my_station = @chain stations begin
-    @filter(stnid == !!my_stnid)  # <1>
-    first
+	@filter(stnid == !!my_stnid)  # <1>
+	first
 end
 my_rainfall = @chain rainfall_data begin
-    @filter(stnid == !!my_stnid)
-    @arrange(date)
+	@filter(stnid == !!my_stnid)
+	@arrange(date)
 end
 
 station_time_series = let
-    fig = Figure(size=(1000, 400))
-    ax = Axis(fig[1, 1], xlabel="Year", ylabel="Annual Max Rainfall (inches)",
-        title="Annual Maximum Rainfall at $(my_station.name), TX")
-    years = my_rainfall.year
-    rain = ustrip.(u"inch", my_rainfall.rainfall)  # <2>
-    lines!(ax, years, rain, color=:blue)
-    scatter!(ax, years, rain, color=:blue, markersize=8)
-    fig
+	fig = Figure(size = (1000, 400))
+	ax = Axis(fig[1, 1], xlabel = "Year", ylabel = "Annual Max Rainfall (inches)",
+		title = "Annual Maximum Rainfall at $(my_station.name), TX")
+	years = my_rainfall.year
+	rain = ustrip.(u"inch", my_rainfall.rainfall)  # <2>
+	lines!(ax, years, rain, color = :blue)
+	scatter!(ax, years, rain, color = :blue, markersize = 8)
+	fig
 end
 ```
 
@@ -220,16 +220,16 @@ We will iteratively refine them based on [prior predictive checks](https://arxiv
 ```{julia}
 #| output: false
 @model function gev_model(y)
-    μ ~ Normal(3.0, 3.0)
-    log_σ ~ Normal(0.0, 1.0)  # <1>
-    ξ ~ Normal(0.0, 0.3)
-    σ = exp(log_σ)  # <2>
-    dist = GeneralizedExtremeValue(μ, σ, ξ)
-    if length(y) > 0  # <3>
-        for i in eachindex(y)
-            y[i] ~ dist
-        end
-    end
+	μ ~ Normal(3.0, 3.0)
+	log_σ ~ Normal(0.0, 1.0)  # <1>
+	ξ ~ Normal(0.0, 0.3)
+	σ = exp(log_σ)  # <2>
+	dist = GeneralizedExtremeValue(μ, σ, ξ)
+	if length(y) > 0  # <3>
+		for i in eachindex(y)
+			y[i] ~ dist
+		end
+	end
 end
 ```
 
@@ -246,26 +246,26 @@ Turing helps us with this by allowing us to run MCMC with no data, which effecti
 ```{julia}
 #| warning: false
 #| output: false
-function load_or_sample(fname, model; overwrite=false, n_chains=4, samples_per_chain=2000, sampler=NUTS(), threading=MCMCThreads(), rng=rng)
-    idata = try
-        @assert !overwrite "Reading from cache disabled by overwrite=true"  # <1>
-        idata = ArviZ.from_netcdf(fname)
-        @info "Loaded cached prior samples from $fname"
-        return idata
-    catch
-        chains = sample(
-            model,
-            sampler,
-            threading,
-            Int(ceil(samples_per_chain * n_chains)),  # <2>
-            n_chains, # number of chains
-            verbose=false,
-        )
-        idata = ArviZ.from_mcmcchains(chains)
-        ArviZ.to_netcdf(idata, fname)
-        @info "Sampled and cached prior samples to $fname"
-        return idata
-    end
+function load_or_sample(fname, model; overwrite = false, n_chains = 4, samples_per_chain = 2000, sampler = NUTS(), threading = MCMCThreads(), rng = rng)
+	idata = try
+		@assert !overwrite "Reading from cache disabled by overwrite=true"  # <1>
+		idata = ArviZ.from_netcdf(fname)
+		@info "Loaded cached prior samples from $fname"
+		return idata
+	catch
+		chains = sample(
+			model,
+			sampler,
+			threading,
+			Int(ceil(samples_per_chain * n_chains)),  # <2>
+			n_chains, # number of chains
+			verbose = false,
+		)
+		idata = ArviZ.from_mcmcchains(chains)
+		ArviZ.to_netcdf(idata, fname)
+		@info "Sampled and cached prior samples to $fname"
+		return idata
+	end
 end
 ```
 
@@ -275,10 +275,10 @@ end
 ```{julia}
 #| output: false
 prior_idata_v1 = let
-    fname = joinpath(lab_dir, "prior_v1.nc")
-    model = gev_model([])  # <1>
-    overwrite = true # <2>
-    load_or_sample(fname, model; overwrite=overwrite)
+	fname = joinpath(lab_dir, "prior_v1.nc")
+	model = gev_model([])  # <1>
+	overwrite = true # <2>
+	load_or_sample(fname, model; overwrite = overwrite)
 end
 prior_GEVs_v1 = vec(GeneralizedExtremeValue.(prior_idata_v1.posterior.μ, exp.(prior_idata_v1.posterior.log_σ), prior_idata_v1.posterior.ξ))
 ```
@@ -294,16 +294,16 @@ Each line represents a different possible return level curve from our prior beli
 
 ```{julia}
 let
-    fig = Figure(size=(1200, 600))
-    ax = Axis(fig[1, 1], xlabel="Return Period (years)", ylabel="Return Level (inches)",
-        title="Prior v1 Predictive Distribution", xscale=log10, xticks=[1, 2, 5, 10, 25, 50, 100, 250])
-    rts = logrange(1.1, 250, 500)
-    for i in rand(1:length(prior_GEVs_v1), 250)
-        gev = prior_GEVs_v1[i]
-        add_return_level_curve!(ax, gev, rts; color=(:blue, 0.125))
-    end
-    ylims!(ax, 0, 75)
-    fig
+	fig = Figure(size = (1200, 600))
+	ax = Axis(fig[1, 1], xlabel = "Return Period (years)", ylabel = "Return Level (inches)",
+		title = "Prior v1 Predictive Distribution", xscale = log10, xticks = [1, 2, 5, 10, 25, 50, 100, 250])
+	rts = logrange(1.1, 250, 500)
+	for i in rand(1:length(prior_GEVs_v1), 250)
+		gev = prior_GEVs_v1[i]
+		add_return_level_curve!(ax, gev, rts; color = (:blue, 0.125))
+	end
+	ylims!(ax, 0, 75)
+	fig
 end
 ```
 
@@ -333,10 +333,10 @@ Start by defining your return level beliefs.
 ```{julia}
 #| output: false
 return_level_priors = [
-    ReturnLevelPrior(2, 3.0, 1.5),
-    ReturnLevelPrior(10, 8.0, 4),
-    ReturnLevelPrior(50, 12.0, 6),
-    ReturnLevelPrior(100, 16, 8),
+	ReturnLevelPrior(2, 3.0, 1.5),
+	ReturnLevelPrior(10, 8.0, 4),
+	ReturnLevelPrior(50, 12.0, 6),
+	ReturnLevelPrior(100, 16, 8),
 ]
 ```
 
@@ -344,28 +344,28 @@ We can pass these into our Turing model
 
 ```{julia}
 #| output: false
-@model function gev_model_quantile_priors(y; return_level_priors=[])
+@model function gev_model_quantile_priors(y; return_level_priors = [])
 
-    μ ~ Normal(3.0, 3.0)
-    log_σ ~ Normal(0.0, 1.0)
-    ξ ~ Normal(0.0, 0.3)
-    σ = exp(log_σ)
-    dist = GeneralizedExtremeValue(μ, σ, ξ)
+	μ ~ Normal(3.0, 3.0)
+	log_σ ~ Normal(0.0, 1.0)
+	ξ ~ Normal(0.0, 0.3)
+	σ = exp(log_σ)
+	dist = GeneralizedExtremeValue(μ, σ, ξ)
 
-    # Apply return level constraints
-    for prior in return_level_priors
-        rl = quantile(dist, prior.quantile)  # <1>
-        if rl > 0.1
-            Turing.@addlogprob!(loglikelihood(prior.distribution, rl))  # <2>
-        else
-            Turing.@addlogprob!(-Inf)  # <3>
-        end
-    end
+	# Apply return level constraints
+	for prior in return_level_priors
+		rl = quantile(dist, prior.quantile)  # <1>
+		if rl > 0.1
+			Turing.@addlogprob!(loglikelihood(prior.distribution, rl))  # <2>
+		else
+			Turing.@addlogprob!(-Inf)  # <3>
+		end
+	end
 
-    # Data likelihood
-    if length(y) > 0
-        y .~ dist
-    end
+	# Data likelihood
+	if length(y) > 0
+		y .~ dist
+	end
 end
 ```
 
@@ -378,10 +378,10 @@ As before, we generate these samples
 ```{julia}
 #| output: false
 prior_idata_v2 = let
-    fname = joinpath(lab_dir, "prior_v2.nc")
-    model = gev_model_quantile_priors([]; return_level_priors=return_level_priors)
-    overwrite = true
-    load_or_sample(fname, model; overwrite=overwrite)
+	fname = joinpath(lab_dir, "prior_v2.nc")
+	model = gev_model_quantile_priors([]; return_level_priors = return_level_priors)
+	overwrite = true
+	load_or_sample(fname, model; overwrite = overwrite)
 end
 prior_GEVs_v2 = vec(GeneralizedExtremeValue.(prior_idata_v2.posterior.μ, exp.(prior_idata_v2.posterior.log_σ), prior_idata_v2.posterior.ξ))
 ```
@@ -390,17 +390,17 @@ We can compare these two prior versions side by side
 
 ```{julia}
 fig_prior_comparison = let
-    rts = logrange(1.1, 250, 500)
-    xticks = [1, 2, 5, 10, 25, 50, 100, 250]
-    fig = Figure(size=(1200, 600))
-    ax1 = Axis(fig[1, 1], xlabel="Return Period (years)", ylabel="Return Level (inches)", title="Prior v1 Predictive Distribution", xscale=log10, xticks=xticks)
-    posterior_bands!(ax1, prior_GEVs_v1, rts; color=(:blue, 0.2), ci=0.90)
-    posterior_mean_curve!(ax1, prior_GEVs_v1, rts; color=:blue, linewidth=3)
-    ax2 = Axis(fig[1, 2], xlabel="Return Period (years)", ylabel="Return Level (inches)", title="Prior v2 Predictive Distribution", xscale=log10, xticks=xticks)
-    posterior_bands!(ax2, prior_GEVs_v2, rts; color=(:blue, 0.2), ci=0.90)
-    posterior_mean_curve!(ax2, prior_GEVs_v2, rts; color=:blue, linewidth=3)
-    linkaxes!(ax1, ax2)
-    fig
+	rts = logrange(1.1, 250, 500)
+	xticks = [1, 2, 5, 10, 25, 50, 100, 250]
+	fig = Figure(size = (1200, 600))
+	ax1 = Axis(fig[1, 1], xlabel = "Return Period (years)", ylabel = "Return Level (inches)", title = "Prior v1 Predictive Distribution", xscale = log10, xticks = xticks)
+	posterior_bands!(ax1, prior_GEVs_v1, rts; color = (:blue, 0.2), ci = 0.90)
+	posterior_mean_curve!(ax1, prior_GEVs_v1, rts; color = :blue, linewidth = 3)
+	ax2 = Axis(fig[1, 2], xlabel = "Return Period (years)", ylabel = "Return Level (inches)", title = "Prior v2 Predictive Distribution", xscale = log10, xticks = xticks)
+	posterior_bands!(ax2, prior_GEVs_v2, rts; color = (:blue, 0.2), ci = 0.90)
+	posterior_mean_curve!(ax2, prior_GEVs_v2, rts; color = :blue, linewidth = 3)
+	linkaxes!(ax1, ax2)
+	fig
 end
 ```
 
@@ -426,7 +426,7 @@ It is very important to drop the missing values from your observed data -- other
 ```{julia}
 #| output: false
 y_obs = collect(skipmissing(ustrip.(u"inch", my_rainfall.rainfall)))  # <1>
-bayes_model = gev_model_quantile_priors(y_obs; return_level_priors=return_level_priors)
+bayes_model = gev_model_quantile_priors(y_obs; return_level_priors = return_level_priors)
 ```
 
 1. Remove Unitful units since Turing.jl works with plain numbers, and skip missing values
@@ -440,14 +440,14 @@ Maximum a posteriori (MAP) estimation finds the parameter values that maximize t
 We can look at `optim_result` from the MLE optimization to see if it thinks it converged
 
 ```{julia}
-mle_estimate = maximum_likelihood(bayes_model, NelderMead(); initial_params=[0.0, log(1.0), 0.0], maxiters=1_000)
+mle_estimate = maximum_likelihood(bayes_model, NelderMead(); initial_params = [0.0, log(1.0), 0.0], maxiters = 1_000)
 mle_estimate.optim_result
 ```
 
 Similarly for MAP
 
 ```{julia}
-map_estimate = maximum_a_posteriori(bayes_model, NelderMead(); initial_params=[0.0, log(1.0), 0.0], maxiters=1_000)
+map_estimate = maximum_a_posteriori(bayes_model, NelderMead(); initial_params = [0.0, log(1.0), 0.0], maxiters = 1_000)
 map_estimate.optim_result
 ```
 
@@ -455,7 +455,7 @@ For comparison, let's also compute MAP estimates using the original model withou
 
 ```{julia}
 original_model = gev_model(y_obs)
-map_estimate_original = maximum_a_posteriori(original_model, NelderMead(); initial_params=[0.0, log(1.0), 0.0], maxiters=1_000)
+map_estimate_original = maximum_a_posteriori(original_model, NelderMead(); initial_params = [0.0, log(1.0), 0.0], maxiters = 1_000)
 map_estimate_original.optim_result
 ```
 
@@ -473,9 +473,9 @@ map_dist_original = GeneralizedExtremeValue(map_estimate_original.values[1], exp
 ```{julia}
 #| output: false
 posterior_idata = let
-    fname = joinpath(lab_dir, "posterior_data.nc")
-    overwrite = true
-    load_or_sample(fname, bayes_model; overwrite=overwrite)
+	fname = joinpath(lab_dir, "posterior_data.nc")
+	overwrite = true
+	load_or_sample(fname, bayes_model; overwrite = overwrite)
 end
 posterior_GEVs = vec(GeneralizedExtremeValue.(posterior_idata.posterior.μ, exp.(posterior_idata.posterior.log_σ), posterior_idata.posterior.ξ))
 ```
@@ -484,23 +484,48 @@ Let's compare the prior and posterior distributions visually.
 
 ```{julia}
 let
-    fig = Figure(size=(900, 500))
-    rts = logrange(1.1, 250, 500)
-    ax1 = Axis(fig[1, 1], xlabel="Return Period (years)", ylabel="Return Level (inches)",
-        title="Return Level Uncertainty: Prior vs Posterior", xscale=log10, xticks=[1, 2, 5, 10, 25, 50, 100, 250])
-    posterior_bands!(ax1, prior_GEVs_v2, rts; color=(:blue, 0.2), ci=0.90, label="Prior 90% CI")
-    posterior_bands!(ax1, posterior_GEVs, rts; color=(:orange, 0.4), ci=0.90, label="Posterior 90% CI")
-    posterior_mean_curve!(ax1, posterior_GEVs, rts; color=:blue, linewidth=3, label="Posterior Mean")
+	fig = Figure(size = (900, 500))
+	rts = logrange(1.1, 250, 500)
+	ax1 = Axis(fig[1, 1], xlabel = "Return Period (years)", ylabel = "Return Level (inches)",
+		title = "Return Level Uncertainty: Prior vs Posterior", xscale = log10, xticks = [1, 2, 5, 10, 25, 50, 100, 250])
+	posterior_bands!(ax1, prior_GEVs_v2, rts; color = (:blue, 0.2), ci = 0.90, label = "Prior 90% CI")
+	posterior_bands!(ax1, posterior_GEVs, rts; color = (:orange, 0.4), ci = 0.90, label = "Posterior 90% CI")
+	posterior_mean_curve!(ax1, posterior_GEVs, rts; color = :blue, linewidth = 3, label = "Posterior Mean")
 
-    mean_return_levels = [quantile(mle_dist, 1 - 1 / T) for T in rts]
-    lines!(ax1, rts, mean_return_levels, color=:red, linewidth=3, label="MLE")
+	mean_return_levels = [quantile(mle_dist, 1 - 1 / T) for T in rts]
+	lines!(ax1, rts, mean_return_levels, color = :red, linewidth = 3, label = "MLE")
 
-    axislegend(ax1; position=:lt)
-    fig
+	axislegend(ax1; position = :lt)
+	fig
 end
 ```
 
-We can see that both the posterior and the MLE give us similar point estimates, but the Bayesian posterior gives us a full uncertainty distribution, which is very useful for risk assessment.
+Let's also compare the MAP estimates from both models:
+
+```{julia}
+let
+	fig = Figure(size = (900, 500))
+	rts = logrange(1.1, 250, 500)
+	ax1 = Axis(fig[1, 1], xlabel = "Return Period (years)", ylabel = "Return Level (inches)",
+		title = "Point Estimates Comparison", xscale = log10, xticks = [1, 2, 5, 10, 25, 50, 100, 250])
+
+	posterior_bands!(ax1, prior_GEVs_v2, rts; color = (:blue, 0.1), ci = 0.90, label = "Prior 90% CI")
+	posterior_bands!(ax1, posterior_GEVs, rts; color = (:orange, 0.3), ci = 0.90, label = "Posterior 90% CI")
+
+	mle_return_levels = [quantile(mle_dist, 1 - 1 / T) for T in rts]
+	map_return_levels = [quantile(map_dist, 1 - 1 / T) for T in rts]
+	map_original_return_levels = [quantile(map_dist_original, 1 - 1 / T) for T in rts]
+
+	lines!(ax1, rts, mle_return_levels, color = :red, linewidth = 3, label = "MLE")
+	lines!(ax1, rts, map_return_levels, color = :green, linewidth = 3, label = "MAP (with return level priors)")
+	lines!(ax1, rts, map_original_return_levels, color = :purple, linewidth = 3, label = "MAP (generic priors only)")
+
+	axislegend(ax1; position = :lt)
+	fig
+end
+```
+
+We can see that the MAP estimate with return levels is, in this case, extremely insensitive to the priors, although both are a little bit different than the MLE.
 
 ## Diagnostics
 
@@ -522,36 +547,36 @@ $\hat{R} > 1.01$ or low effective sample sizes suggest the chains haven't mixed 
 We can also look at trace plots and marginal densities for each parameter.
 
 ```{julia}
-function plot_trace_diagnostics(idata, title_prefix="")  # <1>
-    fig = Figure(size=(1200, 400))
+function plot_trace_diagnostics(idata, title_prefix = "")  # <1>
+	fig = Figure(size = (1200, 400))
 
-    # Extract chain x draw arrays for each parameter
-    μ_arr = Array(idata.posterior.μ)  # <2>
-    log_σ_arr = Array(idata.posterior.log_σ)  # <3>
-    ξ_arr = Array(idata.posterior.ξ)  # <4>
-    ndraws, nchains = size(μ_arr)  # <5>
+	# Extract chain x draw arrays for each parameter
+	μ_arr = Array(idata.posterior.μ)  # <2>
+	log_σ_arr = Array(idata.posterior.log_σ)  # <3>
+	ξ_arr = Array(idata.posterior.ξ)  # <4>
+	ndraws, nchains = size(μ_arr)  # <5>
 
-    # Trace plots per chain
-    ax1 = Axis(fig[1, 1], xlabel="Iteration", ylabel="μ",
-        title="$title_prefix Location Parameter Trace")
-    for c in 1:nchains  # <6>
-        lines!(ax1, 1:ndraws, μ_arr[:, c], label="Chain $(c)")  # <7>
-    end
-    axislegend(ax1; position=:lb)
+	# Trace plots per chain
+	ax1 = Axis(fig[1, 1], xlabel = "Iteration", ylabel = "μ",
+		title = "$title_prefix Location Parameter Trace")
+	for c in 1:nchains  # <6>
+		lines!(ax1, 1:ndraws, μ_arr[:, c], label = "Chain $(c)")  # <7>
+	end
+	axislegend(ax1; position = :lb)
 
-    ax2 = Axis(fig[1, 2], xlabel="Iteration", ylabel="log(σ)",
-        title="$title_prefix Log-Scale Parameter Trace")
-    for c in 1:nchains
-        lines!(ax2, 1:ndraws, log_σ_arr[:, c])
-    end
+	ax2 = Axis(fig[1, 2], xlabel = "Iteration", ylabel = "log(σ)",
+		title = "$title_prefix Log-Scale Parameter Trace")
+	for c in 1:nchains
+		lines!(ax2, 1:ndraws, log_σ_arr[:, c])
+	end
 
-    ax3 = Axis(fig[1, 3], xlabel="Iteration", ylabel="ξ",
-        title="$title_prefix Shape Parameter Trace")
-    for c in 1:nchains
-        lines!(ax3, 1:ndraws, ξ_arr[:, c])
-    end
+	ax3 = Axis(fig[1, 3], xlabel = "Iteration", ylabel = "ξ",
+		title = "$title_prefix Shape Parameter Trace")
+	for c in 1:nchains
+		lines!(ax3, 1:ndraws, ξ_arr[:, c])
+	end
 
-    return fig
+	return fig
 end
 fig_trace_primary = plot_trace_diagnostics(posterior_idata, "Primary Station:")
 ```
@@ -565,28 +590,28 @@ fig_trace_primary = plot_trace_diagnostics(posterior_idata, "Primary Station:")
 7. Plot the trace (parameter value vs. iteration) for each chain
 
 ```{julia}
-function plot_marginal_densities(idata, title_prefix="")
-    fig = Figure(size=(1200, 400))
+function plot_marginal_densities(idata, title_prefix = "")
+	fig = Figure(size = (1200, 400))
 
-    # Extract chain x draw arrays for each parameter
-    μ_arr = Array(idata.posterior.μ)
-    log_σ_arr = Array(idata.posterior.log_σ)
-    ξ_arr = Array(idata.posterior.ξ)
+	# Extract chain x draw arrays for each parameter
+	μ_arr = Array(idata.posterior.μ)
+	log_σ_arr = Array(idata.posterior.log_σ)
+	ξ_arr = Array(idata.posterior.ξ)
 
-    # Marginal densities aggregated across chains
-    ax1 = Axis(fig[1, 1], xlabel="μ", ylabel="Density",
-        title="$title_prefix Location Posterior")
-    hist!(ax1, vec(μ_arr), bins=50, normalization=:pdf, color=(:blue, 0.7))
+	# Marginal densities aggregated across chains
+	ax1 = Axis(fig[1, 1], xlabel = "μ", ylabel = "Density",
+		title = "$title_prefix Location Posterior")
+	hist!(ax1, vec(μ_arr), bins = 50, normalization = :pdf, color = (:blue, 0.7))
 
-    ax2 = Axis(fig[1, 2], xlabel="log(σ)", ylabel="Density",
-        title="$title_prefix Log-Scale Posterior")
-    hist!(ax2, vec(log_σ_arr), bins=50, normalization=:pdf, color=(:blue, 0.7))
+	ax2 = Axis(fig[1, 2], xlabel = "log(σ)", ylabel = "Density",
+		title = "$title_prefix Log-Scale Posterior")
+	hist!(ax2, vec(log_σ_arr), bins = 50, normalization = :pdf, color = (:blue, 0.7))
 
-    ax3 = Axis(fig[1, 3], xlabel="ξ", ylabel="Density",
-        title="$title_prefix Shape Posterior")
-    hist!(ax3, vec(ξ_arr), bins=50, normalization=:pdf, color=(:blue, 0.7))
+	ax3 = Axis(fig[1, 3], xlabel = "ξ", ylabel = "Density",
+		title = "$title_prefix Shape Posterior")
+	hist!(ax3, vec(ξ_arr), bins = 50, normalization = :pdf, color = (:blue, 0.7))
 
-    return fig
+	return fig
 end
 
 fig_densities_primary = plot_marginal_densities(posterior_idata, "Primary Station:")
@@ -609,32 +634,32 @@ We will pick one of these five nearest stations for comparison
 comparison_stnid = 478 # MODIFY THIS AND CHOOSE YOUR COMPARISON
 
 comparison_station = @chain stations begin
-    @filter(stnid == !!comparison_stnid)
-    first
+	@filter(stnid == !!comparison_stnid)
+	first
 end
 comparison_data = @chain rainfall_data begin
-    @filter(stnid == !!comparison_stnid)
-    @arrange(date)
+	@filter(stnid == !!comparison_stnid)
+	@arrange(date)
 end
 
 # plot both stations' data for visual comparison
 function plot_two_stations(station1, data1, station2, data2)
-    fig = Figure(size=(800, 400))
-    ax = Axis(fig[1, 1], xlabel="Year", ylabel="Annual Max Rainfall (inches)",
-        title="Annual Maximum Rainfall: $(station1.name) vs $(station2.name)")
+	fig = Figure(size = (800, 400))
+	ax = Axis(fig[1, 1], xlabel = "Year", ylabel = "Annual Max Rainfall (inches)",
+		title = "Annual Maximum Rainfall: $(station1.name) vs $(station2.name)")
 
-    years1 = data1.year
-    rain1 = ustrip.(u"inch", data1.rainfall)
-    lines!(ax, years1, rain1, color=:purple, label=station1.name)
-    scatter!(ax, years1, rain1, color=:purple, markersize=8)
+	years1 = data1.year
+	rain1 = ustrip.(u"inch", data1.rainfall)
+	lines!(ax, years1, rain1, color = :purple, label = station1.name)
+	scatter!(ax, years1, rain1, color = :purple, markersize = 8)
 
-    years2 = data2.year
-    rain2 = ustrip.(u"inch", data2.rainfall)
-    lines!(ax, years2, rain2, color=:orange, label=station2.name)
-    scatter!(ax, years2, rain2, color=:orange, markersize=8)
+	years2 = data2.year
+	rain2 = ustrip.(u"inch", data2.rainfall)
+	lines!(ax, years2, rain2, color = :orange, label = station2.name)
+	scatter!(ax, years2, rain2, color = :orange, markersize = 8)
 
-    axislegend(ax; position=:rt)
-    return fig
+	axislegend(ax; position = :rt)
+	return fig
 end
 plot_two_stations(my_station, my_rainfall, comparison_station, comparison_data)
 ```
@@ -644,11 +669,11 @@ We will use the same model and priors for the comparison station, assuming simil
 ```{julia}
 #| output: false
 posterior_idata_comp = let
-    fname = joinpath(lab_dir, "posterior_data_comp.nc")
-    y_obs_comp = collect(skipmissing(ustrip.(u"inch", comparison_data.rainfall)))
-    model = gev_model_quantile_priors(y_obs_comp; return_level_priors=return_level_priors)
-    overwrite = true
-    load_or_sample(fname, model; overwrite=overwrite)
+	fname = joinpath(lab_dir, "posterior_data_comp.nc")
+	y_obs_comp = collect(skipmissing(ustrip.(u"inch", comparison_data.rainfall)))
+	model = gev_model_quantile_priors(y_obs_comp; return_level_priors = return_level_priors)
+	overwrite = true
+	load_or_sample(fname, model; overwrite = overwrite)
 end
 posterior_GEVs_comp = vec(GeneralizedExtremeValue.(posterior_idata_comp.posterior.μ, exp.(posterior_idata_comp.posterior.log_σ), posterior_idata_comp.posterior.ξ))
 ```
@@ -667,22 +692,22 @@ We can compare the return level uncertainties between the two stations
 
 ```{julia}
 fig_rl_comp = let
-    rts = logrange(1.1, 250, 500)
-    xticks = [1, 2, 5, 10, 25, 50, 100, 250]
-    fig = Figure(size=(1200, 600))
+	rts = logrange(1.1, 250, 500)
+	xticks = [1, 2, 5, 10, 25, 50, 100, 250]
+	fig = Figure(size = (1200, 600))
 
-    ax1 = Axis(fig[1, 1], xlabel="Return Period (years)", ylabel="Return Level (inches)",
-        title="$(my_station.name)", xscale=log10, xticks=xticks)
-    posterior_bands!(ax1, posterior_GEVs, rts; color=(:blue, 0.2), ci=0.90)
-    posterior_mean_curve!(ax1, posterior_GEVs, rts; color=:blue, linewidth=3)
+	ax1 = Axis(fig[1, 1], xlabel = "Return Period (years)", ylabel = "Return Level (inches)",
+		title = "$(my_station.name)", xscale = log10, xticks = xticks)
+	posterior_bands!(ax1, posterior_GEVs, rts; color = (:blue, 0.2), ci = 0.90)
+	posterior_mean_curve!(ax1, posterior_GEVs, rts; color = :blue, linewidth = 3)
 
-    ax2 = Axis(fig[1, 2], xlabel="Return Period (years)", ylabel="Return Level (inches)",
-        title="$(comparison_station.name)", xscale=log10, xticks=xticks)
-    posterior_bands!(ax2, posterior_GEVs_comp, rts; color=(:orange, 0.2), ci=0.90)
-    posterior_mean_curve!(ax2, posterior_GEVs_comp, rts; color=:orange, linewidth=3)
+	ax2 = Axis(fig[1, 2], xlabel = "Return Period (years)", ylabel = "Return Level (inches)",
+		title = "$(comparison_station.name)", xscale = log10, xticks = xticks)
+	posterior_bands!(ax2, posterior_GEVs_comp, rts; color = (:orange, 0.2), ci = 0.90)
+	posterior_mean_curve!(ax2, posterior_GEVs_comp, rts; color = :orange, linewidth = 3)
 
-    linkaxes!(ax1, ax2)
-    fig
+	linkaxes!(ax1, ax2)
+	fig
 end
 ```
 
